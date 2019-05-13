@@ -13,8 +13,8 @@ import (
 )
 
 func main() {
-	discordToken := os.GetEnv("DISCORD_TOKEN")
-	iexToken := os.GetEnv("IEX_TOKEN")
+	discordToken := os.Getenv("DISCORD_TOKEN")
+	iexToken := os.Getenv("IEX_TOKEN")
 	if discordToken == "" || iexToken == "" {
 		// TODO: More helpful error... move loading to the actual commands so they can fail indepedently.
 		log.Fatal("Missing required environment variables")
