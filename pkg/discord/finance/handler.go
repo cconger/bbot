@@ -1,8 +1,8 @@
 package finance
 
 import (
-	"fmt"
 	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/cconger/bbot/internal/iex"
@@ -32,7 +32,33 @@ func (q *Quote) Run(s *discordgo.Session, m *discordgo.Message) error {
 	if err != nil {
 		return err
 	}
-	s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s: $%f as of %s", quote.CompanyName, quote.LatestPrice, quote.LatestTime))
+
+	quoteTime := time.Unix(quote.LatestUpdate/1000, 0)
+	color := 0xababab
+	if quote.Change.IsNegative() {
+		color = 0xff0000
+	}
+	if quote.Change.IsPositive() {
+		color = 0x00ff00
+	}
+
+	//s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s: $%f as of %s", quote.CompanyName, quote.LatestPrice, quote.LatestTime))
+	_, err = s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
+		Embed: &discordgo.MessageEmbed{
+			Title:     quote.CompanyName,
+			Timestamp: quoteTime.Format(time.RFC3339),
+			Color:     color,
+			Fields: []*discordgo.MessageEmbedField{
+				{Name: "Price", Value: quote.LatestPrice.String()},
+				{Name: "Change", Value: quote.Change.String()},
+				{Name: "High", Value: quote.High.String()},
+				{Name: "Low", Value: quote.Low.String()},
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
